@@ -76,12 +76,14 @@ async function createUser (request, response) {
         password: Joi.string().required(),
         confirmPassword: Joi.string().valid(request.body.password).required()
     });
+    console.log("1")
     const { error } = signupSchema.validate(dataSignup, { abortEarly: false});
-
+    console.log("2", error)
     if (error) {
         response.status(422).send("Dados invalidos, tente novamente");
         return;
     };
+    console.log("3")
 
     let encryptedPassword = bcrypt.hashSync(dataSignup.password, 10);
     dataSignup = {
@@ -89,16 +91,18 @@ async function createUser (request, response) {
                     email: dataSignup.email,
                     password: encryptedPassword
     };
+    console.log("4",encryptedPassword)
     try {
         const checkEmail = await db.collection("users").findOne({email: dataSignup.email});
         if (checkEmail) {
             response.status(409).send("E-mail já cadastrado, cadastre outro ou faça login");
             return;
         };
-
+        console.log("5", checkEmail)
         await db.collection("users").insertOne(dataSignup);
         response.status(200).send("Usuario cadastrado com sucesso");
     } catch (error) {
+        console.log("6",error)
         response.status(500).send(error);
     };
 };
